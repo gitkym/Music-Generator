@@ -1,1 +1,4 @@
-from .population_video import create_population_video
+from .population_video import (
+    build_population_frame_df,
+    render_population_video,
+)
