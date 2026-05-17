@@ -4,7 +4,6 @@ from pathlib import Path
 
 import streamlit as st
 
-from any_tone.generator import generate_any_tone_records
 from any_tone.registry import TONICS
 from pipeline.any_tone_generation_pipeline import run_any_tone_generation_pipeline
 from processes.birth_death import BirthDeathConfig, MutationConfig
@@ -17,18 +16,15 @@ SCALE_FAMILIES = ["diatonic", "pentatonic", "diminished", "whole_tone", "arpeggi
 
 def render_any_tone_page() -> None:
     st.title("Any-Tone Generator")
-    st.caption("Scale-based birth-death process using rotations and retrograde rotations")
+    st.caption("Scale-based birth-death process with generated piano audio and population video")
 
     controls = _render_any_tone_controls()
 
-    if controls["preview_button"]:
-        _preview_any_tone_grid(controls)
-
     if not controls["generate_button"]:
-        st.info("Set parameters, then click Generate Any-Tone Output.")
+        st.info("Set parameters, then click Generate.")
         return
 
-    with st.spinner("Generating any-tone music, audio, and video..."):
+    with st.spinner("Generating music, audio, and video..."):
         result = run_any_tone_generation_pipeline(
             output_dir=PROJECT_ROOT / "generated",
             song_name=controls["song_name"],
@@ -49,6 +45,8 @@ def render_any_tone_page() -> None:
 
 
 def _render_any_tone_controls() -> dict:
+    st.subheader("Controls")
+
     with st.expander("Song Settings", expanded=True):
         c1, c2, c3, c4, c5 = st.columns([2, 1, 1, 1, 1])
 
@@ -68,31 +66,31 @@ def _render_any_tone_controls() -> dict:
             fps = st.number_input("Video FPS", value=15, min_value=1, max_value=60, step=1)
 
     with st.expander("Any-Tone Material", expanded=True):
-        input_mode = st.radio(
-            "Scale input mode",
-            ["Predefined scale", "Manual scale"],
-            horizontal=True,
-        )
+        c1, c2, c3 = st.columns(3)
 
         scale_id = None
         manual_pitch_classes = None
 
-        if input_mode == "Predefined scale":
-            c1, c2, c3 = st.columns(3)
+        with c1:
+            input_mode = st.selectbox(
+                "Scale input mode",
+                ["Predefined scale", "Manual scale"],
+                index=0,
+            )
 
-            with c1:
+        if input_mode == "Predefined scale":
+            with c2:
                 tonic = st.selectbox("Tonic", TONICS, index=0)
 
-            with c2:
+            with c3:
                 scale_family = st.selectbox("Scale family", SCALE_FAMILIES, index=0)
 
-            with c3:
-                if scale_family in ["diatonic", "pentatonic", "arpeggio"]:
-                    variant = st.selectbox("Variant", ["major", "minor"], index=0)
-                    scale_id = f"{_normalise_tonic_for_id(tonic)}_{scale_family}_{variant}"
-                else:
-                    scale_id = f"{_normalise_tonic_for_id(tonic)}_{scale_family}"
-                    st.text_input("Variant", value="standard", disabled=True)
+            if scale_family in ["diatonic", "pentatonic", "arpeggio"]:
+                variant = st.selectbox("Variant", ["major", "minor"], index=0)
+                scale_id = f"{_normalise_tonic_for_id(tonic)}_{scale_family}_{variant}"
+            else:
+                scale_id = f"{_normalise_tonic_for_id(tonic)}_{scale_family}"
+                st.text_input("Variant", value="standard", disabled=True)
 
             st.caption(f"Selected scale ID: `{scale_id}`")
 
@@ -123,9 +121,29 @@ def _render_any_tone_controls() -> dict:
 
         st.markdown("**Allowed transformations:** rotation and retrograde rotation only.")
 
-        m1, m2 = st.columns(2)
+        r3c1, r3c2, r3c3, r3c4 = st.columns(4)
 
-        with m1:
+        with r3c1:
+            st.number_input(
+                "Transpose probability",
+                value=0.0,
+                min_value=0.0,
+                max_value=0.0,
+                step=0.0,
+                disabled=True,
+            )
+
+        with r3c2:
+            st.number_input(
+                "Invert probability",
+                value=0.0,
+                min_value=0.0,
+                max_value=0.0,
+                step=0.0,
+                disabled=True,
+            )
+
+        with r3c3:
             retrograde_probability = st.number_input(
                 "Retrograde probability",
                 value=0.25,
@@ -134,7 +152,7 @@ def _render_any_tone_controls() -> dict:
                 step=0.05,
             )
 
-        with m2:
+        with r3c4:
             rotate_probability = st.number_input(
                 "Rotate probability",
                 value=0.25,
@@ -234,13 +252,7 @@ def _render_any_tone_controls() -> dict:
         with v5:
             st.number_input("Velocity max", value=127, min_value=0, max_value=127, disabled=True)
 
-    col1, col2 = st.columns(2)
-
-    with col1:
-        preview_button = st.button("Preview Any-Tone Grid", use_container_width=True)
-
-    with col2:
-        generate_button = st.button("Generate Any-Tone Output", use_container_width=True)
+    generate_button = st.button("Generate", use_container_width=True)
 
     bd_config = BirthDeathConfig(
         song_length=float(song_length),
@@ -272,7 +284,6 @@ def _render_any_tone_controls() -> dict:
     )
 
     return {
-        "preview_button": preview_button,
         "generate_button": generate_button,
         "song_name": song_name,
         "scale_id": scale_id,
@@ -286,21 +297,6 @@ def _render_any_tone_controls() -> dict:
         "bd_config": bd_config,
         "mutation_config": mutation_config,
     }
-
-
-def _preview_any_tone_grid(controls: dict) -> None:
-    try:
-        records = generate_any_tone_records(
-            scale_id=controls["scale_id"],
-            manual_pitch_classes=controls["manual_pitch_classes"],
-            manual_display_name="Manual Any-Tone Scale",
-        )
-
-        st.subheader("Generated scale grid")
-        st.dataframe(records, use_container_width=True)
-
-    except Exception as exc:
-        st.error(f"Could not generate any-tone grid: {exc}")
 
 
 def _render_any_tone_result(result: dict) -> None:

@@ -18,7 +18,7 @@ def render_navigation() -> str:
     st.sidebar.title("Stochastic Music")
     return st.sidebar.radio(
         "Page",
-        ["Generator", "Any-Tone Generator", "Glossary"],
+        ["12-Tone Generator", "Any-Tone Generator", "Glossary"],
         index=0,
     )
 

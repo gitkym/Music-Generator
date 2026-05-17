@@ -142,8 +142,8 @@ if page == "Any-Tone Generator":
     st.stop()
 
 
-st.title("Stochastic Music Generator")
-st.caption("12-tone birth-death process prototype with generated piano audio and population video")
+st.title("12-Tone Generator")
+st.caption("12-tone birth-death process with generated piano audio and population video")
 
 controls = render_controls()
 
