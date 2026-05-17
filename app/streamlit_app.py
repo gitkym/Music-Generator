@@ -14,6 +14,7 @@ if str(SRC_PATH) not in sys.path:
 
 from ui.widgets import render_navigation, render_controls
 from pipeline.generation_pipeline import run_generation_pipeline
+from ui.any_tone_page import render_any_tone_page
 
 
 st.set_page_config(
@@ -22,6 +23,7 @@ st.set_page_config(
 )
 
 page = render_navigation()
+
 
 if page == "Glossary":
 
@@ -68,10 +70,6 @@ if page == "Glossary":
 
     st.markdown("---")
 
-    # -------------------------
-    # Song Settings
-    # -------------------------
-
     st.header("Song Settings")
 
     st.markdown("""
@@ -83,10 +81,6 @@ if page == "Glossary":
     | **Ticks per beat** | MIDI timing resolution |
     | **Video FPS** | Frame rate of the rendered population animation |
     """)
-
-    # -------------------------
-    # Serial Material
-    # -------------------------
 
     st.header("Serial Material")
 
@@ -108,10 +102,6 @@ if page == "Glossary":
     | **Rotate probability** | Probability of cyclic rotation mutation during birth |
     """)
 
-    # -------------------------
-    # Population Dynamics
-    # -------------------------
-
     st.header("Population Dynamics")
 
     st.markdown("""
@@ -124,10 +114,6 @@ if page == "Glossary":
     | **Min population** | Lower bound for active voices |
     | **Max population** | Upper bound for active voices |
     """)
-
-    # -------------------------
-    # Event Behaviour
-    # -------------------------
 
     st.header("Event Behaviour")
 
@@ -148,6 +134,11 @@ if page == "Glossary":
     | **Velocity min/max** | Reserved bounds for future velocity clamping |
     """)
 
+    st.stop()
+
+
+if page == "Any-Tone Generator":
+    render_any_tone_page()
     st.stop()
 
 
