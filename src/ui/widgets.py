@@ -49,7 +49,7 @@ def render_controls():
         c1, c2, c3, c4, c5 = st.columns([2, 1, 1, 1, 1])
 
         with c1:
-            song_name = st.text_input("Song name", value="birth_death_streamlit_test")
+            song_name = st.text_input("Song name", value="song_1")
 
         with c2:
             song_length = st.number_input("Song length", value=60.0, min_value=1.0, step=1.0)
