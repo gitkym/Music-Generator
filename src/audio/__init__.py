@@ -1,0 +1,1 @@
+from .synthesis import synthesize_midi_to_wav

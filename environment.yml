@@ -14,7 +14,11 @@ dependencies:
   - pip
 
   - pip:
+      - streamlit
+      - plotly
       - mido
       - pretty_midi
       - pyyaml
       - networkx
+      - moviepy
+      - imageio-ffmpeg
