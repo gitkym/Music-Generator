@@ -13,21 +13,10 @@ from processes.birth_death import (
     BirthDeathToneRowProcess,
 )
 
-from rendering.midi import (
-    pitch_events_to_midi,
-)
-
-from audio.synthesis import (
-    synthesize_midi_to_wav,
-)
-
-from video.population_video import (
-    render_population_video,
-)
-
-from video.combine import (
-    combine_audio_and_video,
-)
+from rendering.midi import pitch_events_to_midi
+from audio.synthesis import synthesize_midi_to_wav
+from video.population_video import render_population_video
+from video.combine import combine_audio_and_video
 
 from analysis.stats import (
     pitch_events_to_dataframe,
@@ -47,6 +36,7 @@ def run_generation_pipeline(
     bd_config: BirthDeathConfig,
     mutation_config: MutationConfig,
     fps: int = 15,
+    input_row: list[int] | None = None,
 ):
     output_dir = Path(output_dir)
 
@@ -58,13 +48,14 @@ def run_generation_pipeline(
     audio_dir.mkdir(parents=True, exist_ok=True)
     video_dir.mkdir(parents=True, exist_ok=True)
 
-    raw_row = generate_row(
-        modulus=12,
-        seed=row_seed,
-    )
+    if input_row is None:
+        input_row = generate_row(
+            modulus=12,
+            seed=row_seed,
+        )
 
     material = TwelveToneMaterial(
-        raw_row=raw_row,
+        raw_row=input_row,
         normalise=True,
     )
 
@@ -101,12 +92,12 @@ def run_generation_pipeline(
         wav_path=wav_path,
     )
 
-    pop_df = population_events_to_dataframe(population_events)
+    population_df = population_events_to_dataframe(population_events)
 
     silent_video_path = video_dir / f"{song_name}_silent.mp4"
 
     render_population_video(
-        pop_df=pop_df,
+        pop_df=population_df,
         output_path=silent_video_path,
         song_length=bd_config.song_length,
         fps=fps,
@@ -120,13 +111,17 @@ def run_generation_pipeline(
         output_path=final_video_path,
     )
 
+    pitch_df = pitch_events_to_dataframe(pitch_events)
+
     return {
-        "raw_row": raw_row,
+        "input_row": input_row,
+        "raw_row": material.raw_row,
         "p0_row": material.p0_row,
+        "prime_row": material.p0_row,
         "pitch_events": pitch_events,
         "population_events": population_events,
-        "pitch_df": pitch_events_to_dataframe(pitch_events),
-        "population_df": pop_df,
+        "pitch_df": pitch_df,
+        "population_df": population_df,
         "midi_path": midi_path,
         "wav_path": wav_path,
         "video_path": final_video_path,

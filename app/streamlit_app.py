@@ -16,7 +16,7 @@ SRC_PATH = PROJECT_ROOT / "src"
 if str(SRC_PATH) not in sys.path:
     sys.path.append(str(SRC_PATH))
 
-from ui.widgets import render_sidebar
+from ui.widgets import render_controls
 from pipeline.generation_pipeline import run_generation_pipeline
 
 
@@ -37,7 +37,7 @@ st.caption("12-tone birth-death process prototype with generated piano audio and
 # Controls
 # -------------------------
 
-controls = render_sidebar()
+controls = render_controls()
 
 
 # -------------------------

@@ -2,250 +2,420 @@ from __future__ import annotations
 
 import streamlit as st
 
+from material.twelve_tone import (
+    generate_row,
+    TwelveToneMaterial,
+    validate_row,
+)
+
 from processes.birth_death import (
     BirthDeathConfig,
     MutationConfig,
 )
 
 
-def render_sidebar():
-    st.sidebar.header("Seeds")
-
-    row_seed = st.sidebar.number_input(
-        "Row seed",
-        value=42,
-        step=1,
-    )
-
-    process_seed = st.sidebar.number_input(
-        "Process seed",
-        value=123,
-        step=1,
-    )
-
-    st.sidebar.header("Song")
-
-    song_name = st.sidebar.text_input(
-        "Song name",
-        value="birth_death_streamlit_test",
-    )
-
-    bpm = st.sidebar.number_input(
-        "BPM",
-        value=120,
-        min_value=20,
-        max_value=300,
-        step=1,
-    )
-
-    song_length = st.sidebar.number_input(
-        "Song length seconds",
-        value=60.0,
-        min_value=1.0,
-        step=1.0,
-    )
-
-    ticks_per_beat = st.sidebar.number_input(
-        "Ticks per beat",
-        value=480,
-        min_value=24,
-        step=24,
-    )
-
-    base_octave = st.sidebar.number_input(
-        "Base octave",
-        value=4,
-        min_value=0,
-        max_value=9,
-        step=1,
-    )
-
-    octave_span = st.sidebar.number_input(
-        "Octave span",
-        value=3,
-        min_value=1,
-        max_value=8,
-        step=1,
-    )
-
-    st.sidebar.header("Population")
-
-    initial_population = st.sidebar.number_input(
-        "Initial population",
-        value=2,
-        min_value=0,
-        step=1,
-    )
-
-    min_population = st.sidebar.number_input(
-        "Min population",
-        value=1,
-        min_value=0,
-        step=1,
-    )
-
-    max_population = st.sidebar.number_input(
-        "Max population",
-        value=12,
-        min_value=1,
-        step=1,
-    )
-
-    birth_rate = st.sidebar.number_input(
-        "Birth rate",
-        value=0.12,
-        min_value=0.0,
-        step=0.01,
-        format="%.4f",
-    )
-
-    death_rate = st.sidebar.number_input(
-        "Death rate",
-        value=0.08,
-        min_value=0.0,
-        step=0.01,
-        format="%.4f",
-    )
-
-    st.sidebar.header("Notes")
-
-    note_rate_mean = st.sidebar.number_input(
-        "Note rate mean",
-        value=2.5,
-        min_value=0.01,
-        step=0.1,
-    )
-
-    note_rate_sd = st.sidebar.number_input(
-        "Note rate SD",
-        value=0.35,
-        min_value=0.0,
-        step=0.05,
-    )
-
-    duration_mean = st.sidebar.number_input(
-        "Duration mean",
-        value=0.25,
-        min_value=0.01,
-        step=0.05,
-    )
-
-    duration_sd = st.sidebar.number_input(
-        "Duration SD",
-        value=0.25,
-        min_value=0.0,
-        step=0.05,
-    )
-
-    duration_mode = st.sidebar.selectbox(
-        "Duration mode",
-        ["fixed", "normal", "uniform", "exponential"],
-        index=1,
-    )
-
-    duration_min = st.sidebar.number_input(
-        "Duration min",
-        value=0.05,
-        min_value=0.001,
-        step=0.01,
-    )
-
-    duration_max = st.sidebar.number_input(
-        "Duration max",
-        value=1.50,
-        min_value=0.001,
-        step=0.05,
-    )
-
-    velocity_mean = st.sidebar.number_input(
-        "Velocity mean",
-        value=72,
-        min_value=0,
-        max_value=127,
-        step=1,
-    )
-
-    velocity_sd = st.sidebar.number_input(
-        "Velocity SD",
-        value=0.12,
-        min_value=0.0,
-        step=0.05,
-    )
-
-    velocity_mode = st.sidebar.selectbox(
-        "Velocity mode",
-        ["fixed", "normal", "uniform"],
-        index=1,
-    )
-
-    st.sidebar.header("Mutations")
-
-    transpose_probability = st.sidebar.number_input(
-        "Transpose probability",
-        value=0.45,
-        min_value=0.0,
-        max_value=1.0,
-        step=0.05,
-    )
-
-    transpose_intervals_text = st.sidebar.text_input(
-        "Transpose intervals",
-        value="-6,-5,-3,-2,1,2,3,5,6",
-    )
-
-    invert_probability = st.sidebar.number_input(
-        "Invert probability",
-        value=0.20,
-        min_value=0.0,
-        max_value=1.0,
-        step=0.05,
-    )
-
-    retrograde_probability = st.sidebar.number_input(
-        "Retrograde probability",
-        value=0.25,
-        min_value=0.0,
-        max_value=1.0,
-        step=0.05,
-    )
-
-    rotate_probability = st.sidebar.number_input(
-        "Rotate probability",
-        value=0.25,
-        min_value=0.0,
-        max_value=1.0,
-        step=0.05,
-    )
-
-    rotate_steps_text = st.sidebar.text_input(
-        "Rotate steps",
-        value="1,2,3,4,5,6",
-    )
-
-    fps = st.sidebar.number_input(
-        "Video FPS",
-        value=15,
-        min_value=1,
-        max_value=60,
-        step=1,
-    )
-
-    generate_button = st.sidebar.button(
-        "Generate",
-        use_container_width=True,
-    )
-
-    transpose_intervals = tuple(
+def _parse_int_tuple(text: str) -> tuple[int, ...]:
+    return tuple(
         int(x.strip())
-        for x in transpose_intervals_text.split(",")
+        for x in text.split(",")
         if x.strip()
     )
 
-    rotate_steps = tuple(
+
+def _parse_row(text: str) -> list[int]:
+    return [
         int(x.strip())
-        for x in rotate_steps_text.split(",")
+        for x in text.split(",")
         if x.strip()
-    )
+    ]
+
+
+def _format_row(row: list[int]) -> str:
+    return ", ".join(str(x) for x in row)
+
+
+def render_controls():
+    st.subheader("Controls")
+
+    # -------------------------
+    # Output & Playback
+    # -------------------------
+
+    with st.expander("Output & Playback", expanded=True):
+        c1, c2, c3, c4 = st.columns([2, 1, 1, 1])
+
+        with c1:
+            song_name = st.text_input(
+                "Song name",
+                value="birth_death_streamlit_test",
+            )
+
+        with c2:
+            song_length = st.number_input(
+                "Song length seconds",
+                value=60.0,
+                min_value=1.0,
+                step=1.0,
+            )
+
+        with c3:
+            fps = st.number_input(
+                "Video FPS",
+                value=15,
+                min_value=1,
+                max_value=60,
+                step=1,
+            )
+
+        with c4:
+            st.write("")
+            st.write("")
+            generate_button = st.button(
+                "Generate",
+                use_container_width=True,
+            )
+
+    # -------------------------
+    # Temporal Engine
+    # -------------------------
+
+    with st.expander("Temporal Engine", expanded=True):
+        c1, c2, c3, c4 = st.columns(4)
+
+        with c1:
+            bpm = st.number_input(
+                "BPM",
+                value=120,
+                min_value=20,
+                max_value=300,
+                step=1,
+            )
+
+        with c2:
+            ticks_per_beat = st.number_input(
+                "Ticks per beat",
+                value=480,
+                min_value=24,
+                step=24,
+            )
+
+        with c3:
+            note_rate_mean = st.number_input(
+                "Note rate mean",
+                value=2.5,
+                min_value=0.01,
+                step=0.1,
+            )
+
+        with c4:
+            note_rate_sd = st.number_input(
+                "Note rate SD",
+                value=0.35,
+                min_value=0.0,
+                step=0.05,
+            )
+
+    # -------------------------
+    # Serial Material
+    # -------------------------
+
+    input_row = None
+    row_valid = True
+
+    with st.expander("Serial Material", expanded=True):
+        c1, c2, c3 = st.columns([1, 1, 2])
+
+        with c1:
+            row_source = st.selectbox(
+                "Row source",
+                ["Random", "Manual"],
+                index=0,
+            )
+
+        with c2:
+            row_seed = st.number_input(
+                "Row seed",
+                value=42,
+                step=1,
+                disabled=(row_source == "Manual"),
+            )
+
+        with c3:
+            manual_row_text = st.text_input(
+                "Manual input row",
+                value="0,1,2,3,4,5,6,7,8,9,10,11",
+                disabled=(row_source == "Random"),
+            )
+
+        try:
+            if row_source == "Random":
+                input_row = generate_row(
+                    modulus=12,
+                    seed=int(row_seed),
+                )
+            else:
+                input_row = _parse_row(manual_row_text)
+                validate_row(input_row)
+
+            material_preview = TwelveToneMaterial(
+                raw_row=input_row,
+                normalise=True,
+            )
+
+            prime_row = material_preview.p0_row
+
+        except Exception as exc:
+            row_valid = False
+            input_row = None
+            prime_row = []
+            st.error(f"Invalid row: {exc}")
+
+        c4, c5 = st.columns(2)
+
+        with c4:
+            st.text_input(
+                "Input row",
+                value=_format_row(input_row) if input_row else "",
+                disabled=True,
+            )
+
+        with c5:
+            st.text_input(
+                "Prime row",
+                value=_format_row(prime_row) if prime_row else "",
+                disabled=True,
+            )
+
+    # -------------------------
+    # Register & Row Mutation
+    # -------------------------
+
+    with st.expander("Register & Row Mutation", expanded=True):
+        r1c1, r1c2, r1c3, r1c4 = st.columns(4)
+
+        with r1c1:
+            base_octave = st.number_input(
+                "Base octave",
+                value=4,
+                min_value=0,
+                max_value=9,
+                step=1,
+            )
+
+        with r1c2:
+            octave_span = st.number_input(
+                "Octave span",
+                value=3,
+                min_value=1,
+                max_value=8,
+                step=1,
+            )
+
+        with r1c3:
+            transpose_intervals_text = st.text_input(
+                "Transpose intervals",
+                value="-6,-5,-3,-2,1,2,3,5,6",
+            )
+
+        with r1c4:
+            rotate_steps_text = st.text_input(
+                "Rotate steps",
+                value="1,2,3,4,5,6",
+            )
+
+        r2c1, r2c2, r2c3, r2c4 = st.columns(4)
+
+        with r2c1:
+            transpose_probability = st.number_input(
+                "Transpose probability",
+                value=0.45,
+                min_value=0.0,
+                max_value=1.0,
+                step=0.05,
+            )
+
+        with r2c2:
+            invert_probability = st.number_input(
+                "Invert probability",
+                value=0.20,
+                min_value=0.0,
+                max_value=1.0,
+                step=0.05,
+            )
+
+        with r2c3:
+            retrograde_probability = st.number_input(
+                "Retrograde probability",
+                value=0.25,
+                min_value=0.0,
+                max_value=1.0,
+                step=0.05,
+            )
+
+        with r2c4:
+            rotate_probability = st.number_input(
+                "Rotate probability",
+                value=0.25,
+                min_value=0.0,
+                max_value=1.0,
+                step=0.05,
+            )
+
+    # -------------------------
+    # Population Dynamics
+    # -------------------------
+
+    with st.expander("Population Dynamics", expanded=True):
+        r1c1, r1c2, r1c3 = st.columns(3)
+
+        with r1c1:
+            process_seed = st.number_input(
+                "Process seed",
+                value=123,
+                step=1,
+            )
+
+        with r1c2:
+            birth_rate = st.number_input(
+                "Birth rate",
+                value=0.12,
+                min_value=0.0,
+                step=0.01,
+                format="%.4f",
+            )
+
+        with r1c3:
+            death_rate = st.number_input(
+                "Death rate",
+                value=0.08,
+                min_value=0.0,
+                step=0.01,
+                format="%.4f",
+            )
+
+        r2c1, r2c2, r2c3 = st.columns(3)
+
+        with r2c1:
+            initial_population = st.number_input(
+                "Initial population",
+                value=2,
+                min_value=0,
+                step=1,
+            )
+
+        with r2c2:
+            min_population = st.number_input(
+                "Min population",
+                value=1,
+                min_value=0,
+                step=1,
+            )
+
+        with r2c3:
+            max_population = st.number_input(
+                "Max population",
+                value=12,
+                min_value=1,
+                step=1,
+            )
+
+    # -------------------------
+    # Articulation & Dynamics
+    # -------------------------
+
+    with st.expander("Articulation & Dynamics", expanded=True):
+        r1c1, r1c2, r1c3, r1c4, r1c5 = st.columns(5)
+
+        with r1c1:
+            duration_mode = st.selectbox(
+                "Duration mode",
+                ["fixed", "normal", "uniform", "exponential"],
+                index=1,
+            )
+
+        with r1c2:
+            duration_mean = st.number_input(
+                "Duration mean",
+                value=0.25,
+                min_value=0.01,
+                step=0.05,
+            )
+
+        with r1c3:
+            duration_sd = st.number_input(
+                "Duration SD",
+                value=0.25,
+                min_value=0.0,
+                step=0.05,
+            )
+
+        with r1c4:
+            duration_min = st.number_input(
+                "Duration min",
+                value=0.05,
+                min_value=0.001,
+                step=0.01,
+            )
+
+        with r1c5:
+            duration_max = st.number_input(
+                "Duration max",
+                value=1.50,
+                min_value=0.001,
+                step=0.05,
+            )
+
+        r2c1, r2c2, r2c3, r2c4, r2c5 = st.columns(5)
+
+        with r2c1:
+            velocity_mode = st.selectbox(
+                "Velocity mode",
+                ["fixed", "normal", "uniform"],
+                index=1,
+            )
+
+        with r2c2:
+            velocity_mean = st.number_input(
+                "Velocity mean",
+                value=72,
+                min_value=0,
+                max_value=127,
+                step=1,
+            )
+
+        with r2c3:
+            velocity_sd = st.number_input(
+                "Velocity SD",
+                value=0.12,
+                min_value=0.0,
+                step=0.05,
+            )
+
+        with r2c4:
+            st.number_input(
+                "Velocity min",
+                value=0,
+                min_value=0,
+                max_value=127,
+                step=1,
+                disabled=True,
+            )
+
+        with r2c5:
+            st.number_input(
+                "Velocity max",
+                value=127,
+                min_value=0,
+                max_value=127,
+                step=1,
+                disabled=True,
+            )
+
+    if not row_valid:
+        generate_button = False
+
+    transpose_intervals = _parse_int_tuple(transpose_intervals_text)
+    rotate_steps = _parse_int_tuple(rotate_steps_text)
 
     bd_config = BirthDeathConfig(
         song_length=float(song_length),
@@ -280,6 +450,8 @@ def render_sidebar():
         "generate_button": generate_button,
         "song_name": song_name,
         "row_seed": int(row_seed),
+        "input_row": input_row,
+        "prime_row": prime_row,
         "process_seed": int(process_seed),
         "bpm": int(bpm),
         "ticks_per_beat": int(ticks_per_beat),

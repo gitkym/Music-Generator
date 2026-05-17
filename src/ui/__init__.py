@@ -1,3 +1,3 @@
 from .widgets import (
-    render_sidebar,
+    render_controls,
 )
