@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from moviepy.editor import AudioFileClip, VideoFileClip
+try:
+    from moviepy import AudioFileClip, VideoFileClip
+except ImportError:
+    from moviepy.editor import AudioFileClip, VideoFileClip
 
 
 def combine_audio_and_video(
@@ -19,7 +22,10 @@ def combine_audio_and_video(
     video_clip = VideoFileClip(str(video_path))
     audio_clip = AudioFileClip(str(audio_path))
 
-    final_clip = video_clip.set_audio(audio_clip)
+    if hasattr(video_clip, "with_audio"):
+        final_clip = video_clip.with_audio(audio_clip)
+    else:
+        final_clip = video_clip.set_audio(audio_clip)
 
     final_clip.write_videofile(
         str(output_path),
