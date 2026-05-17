@@ -23,7 +23,6 @@ def flatten_scale_grid(grid: ScaleGrid) -> list[dict]:
                     "scale_id": grid.scale.scale_id,
                     "scale_name": grid.scale.display_name,
                     "scale_family": grid.scale.family,
-                    "scale_variant": grid.scale.variant,
                     "scale_length": grid.scale.length,
                     "transformation_id": row.transformation_id,
                     "transformation_type": row.transformation_type,

@@ -3,45 +3,25 @@ from any_tone.schemas import ScaleDefinition
 
 
 SCALE_INTERVALS = {
-    "diatonic_major": {
+    "diatonic": {
         "family": "diatonic",
-        "variant": "major",
         "intervals": [0, 2, 4, 5, 7, 9, 11],
     },
-    "diatonic_minor": {
-        "family": "diatonic",
-        "variant": "minor",
-        "intervals": [0, 2, 3, 5, 7, 8, 10],
-    },
-    "pentatonic_major": {
+    "pentatonic": {
         "family": "pentatonic",
-        "variant": "major",
         "intervals": [0, 2, 4, 7, 9],
-    },
-    "pentatonic_minor": {
-        "family": "pentatonic",
-        "variant": "minor",
-        "intervals": [0, 3, 5, 7, 10],
     },
     "diminished": {
         "family": "diminished",
-        "variant": "standard",
         "intervals": [0, 1, 3, 4, 6, 7, 9, 10],
     },
     "whole_tone": {
         "family": "whole_tone",
-        "variant": "standard",
         "intervals": [0, 2, 4, 6, 8, 10],
     },
-    "arpeggio_major": {
+    "arpeggio": {
         "family": "arpeggio",
-        "variant": "major",
         "intervals": [0, 4, 7],
-    },
-    "arpeggio_minor": {
-        "family": "arpeggio",
-        "variant": "minor",
-        "intervals": [0, 3, 7],
     },
 }
 
@@ -57,21 +37,12 @@ def _build_scale(scale_key: str, tonic: str) -> ScaleDefinition:
     note_names = pcs_to_note_names(pitch_classes)
 
     scale_id = f"{tonic.lower().replace('#', 'sharp')}_{scale_key}"
-
-    if spec["variant"] == "standard":
-        display_name = f"{tonic} {spec['family'].replace('_', ' ').title()}"
-    else:
-        display_name = (
-            f"{tonic} "
-            f"{spec['family'].replace('_', ' ').title()} "
-            f"{spec['variant'].replace('_', ' ').title()}"
-        )
+    display_name = f"{tonic} {spec['family'].replace('_', ' ').title()}"
 
     return ScaleDefinition(
         scale_id=scale_id,
         display_name=display_name,
         family=spec["family"],
-        variant=spec["variant"],
         tonic=tonic,
         pitch_classes=pitch_classes,
         note_names=note_names,

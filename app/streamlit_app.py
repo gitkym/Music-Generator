@@ -30,23 +30,39 @@ if page == "Glossary":
     st.title("Glossary")
 
     st.markdown("""
-    ## 12-Tone Method
+    ## 12-Tone Generator
 
-    The 12-tone method is a compositional system developed by Arnold Schoenberg in which all 12 pitch classes are organised into an ordered sequence called a tone row.
+    The 12-Tone Generator uses a classic 12-pitch-class row as its source material. The row contains each pitch class from `0–11` exactly once.
 
-    In this app:
+    In this mode:
 
-    - A tone row is represented numerically using pitch classes `0–11`
-    - The row acts as the base musical material for all generated voices
-    - Transformations such as:
-        - transposition
-        - inversion
-        - retrograde
-        - rotation
-      are probabilistically applied during the birth-death process
-    - The app internally normalises rows into a Prime (P0) form for consistent transformation logic
+    - The input row can be randomly generated or manually entered
+    - The row is normalised into a Prime row
+    - The system derives Prime, Inversion, Retrograde, and Retrograde-Inversion forms
+    - Transposition, inversion, retrograde, and rotation can occur during the birth-death process
+    - This mode is the closer one to traditional 12-tone serial logic
+    """)
 
-    The system here is intentionally mechanical and stochastic rather than stylistically “human”.
+    st.markdown("""
+    ## Any-Tone Generator
+
+    The Any-Tone Generator uses a selected pitch-class collection rather than a full 12-tone row.
+
+    The predefined collections are:
+
+    - **Diatonic**: 7 notes
+    - **Pentatonic**: 5 notes
+    - **Diminished**: 8 notes
+    - **Whole tone**: 6 notes
+    - **Arpeggio**: 3 notes
+
+    In this mode:
+
+    - The user selects a tonic and a scale family, or enters a manual pitch-class collection
+    - The selected collection is expanded into a scale grid
+    - The grid is generated using rotations and retrograde rotations
+    - Transposition and inversion are disabled
+    - The perceived major/minor quality is left to musical motion, register, repetition, and context rather than predefined major/minor mappings
     """)
 
     st.markdown("""
@@ -58,19 +74,17 @@ if page == "Glossary":
 
     - Each active voice is treated as an evolving entity
     - Voices emit note events while alive
-    - Voices may:
-        - reproduce (birth)
-        - terminate (death)
-    - Child voices inherit tone-row material with possible mutations
+    - Voices may reproduce or terminate
+    - Child voices inherit pitch material with possible mutations
     - Population size evolves dynamically through time
     - Event timings are generated from exponential waiting times
 
-    The result is a continuously evolving population of interacting serial generators.
+    The same broad population logic is used by both generator modes. The difference is the pitch material supplied to the process.
     """)
 
     st.markdown("---")
 
-    st.header("Song Settings")
+    st.header("Shared Song Settings")
 
     st.markdown("""
     | Parameter | Description |
@@ -82,48 +96,53 @@ if page == "Glossary":
     | **Video FPS** | Frame rate of the rendered population animation |
     """)
 
-    st.header("Serial Material")
+    st.header("12-Tone Material")
 
     st.markdown("""
     | Parameter | Description |
     |---|---|
-    | **Row source** | Selects between randomly generated or manually entered tone rows |
-    | **Row seed** | Random seed used when generating tone rows |
-    | **Manual input row** | User-defined ordered pitch-class sequence |
-    | **Input row** | Final row entering the system |
+    | **Row source** | Selects between randomly generated or manually entered 12-tone rows |
+    | **Row seed** | Random seed used when generating 12-tone rows |
+    | **Manual input row** | User-defined ordered 12-pitch-class sequence |
+    | **Input row** | Final 12-tone row entering the system |
     | **Prime row** | Normalised row where first pitch class is mapped to 0 |
-    | **Base octave** | Central octave used for MIDI pitch mapping |
-    | **Octave span** | Number of octaves available for note placement |
-    | **Transpose intervals** | Allowed transposition offsets for row mutation |
-    | **Rotate steps** | Allowed cyclic row rotations |
+    | **Transpose intervals** | Allowed chromatic transposition offsets for row mutation |
     | **Transpose probability** | Probability of transposition mutation during birth |
     | **Invert probability** | Probability of inversion mutation during birth |
     | **Retrograde probability** | Probability of retrograde mutation during birth |
     | **Rotate probability** | Probability of cyclic rotation mutation during birth |
     """)
 
-    st.header("Population Dynamics")
+    st.header("Any-Tone Material")
 
     st.markdown("""
     | Parameter | Description |
     |---|---|
+    | **Scale input mode** | Selects between predefined pitch collections and manual pitch-class input |
+    | **Tonic** | Starting pitch class used to build the selected collection |
+    | **Scale family** | Diatonic, pentatonic, diminished, whole tone, or arpeggio |
+    | **Manual pitch classes** | User-defined ordered pitch-class collection with fewer than 12 notes |
+    | **Selected scale ID** | Internal ID for the selected any-tone collection |
+    | **Allowed transformations** | Rotation and retrograde rotation only |
+    | **Retrograde probability** | Probability of reversing a child row during birth |
+    | **Rotate probability** | Probability of cyclically rotating a child row during birth |
+    """)
+
+    st.header("Shared Event Behaviour")
+
+    st.markdown("""
+    | Parameter | Description |
+    |---|---|
+    | **Base octave** | Central octave used for MIDI pitch mapping |
+    | **Octave span** | Number of octaves available for note placement |
     | **Process seed** | Random seed for stochastic population evolution |
     | **Birth rate** | Rate parameter controlling voice reproduction frequency |
     | **Death rate** | Rate parameter controlling voice termination frequency |
     | **Initial population** | Number of voices active at process start |
     | **Min population** | Lower bound for active voices |
     | **Max population** | Upper bound for active voices |
-    """)
-
-    st.header("Event Behaviour")
-
-    st.markdown("""
-    | Parameter | Description |
-    |---|---|
-    | **Note-rate mode** | Statistical model governing inter-event waiting times |
     | **Note-rate mean** | Mean event density / note activity |
     | **Note-rate SD** | Variability of note-event timing |
-    | **Note-rate min/max** | Reserved bounds for future timing controls |
     | **Duration mode** | Statistical model governing note durations |
     | **Duration mean** | Average note duration |
     | **Duration SD** | Variability of note durations |
@@ -131,7 +150,6 @@ if page == "Glossary":
     | **Velocity mode** | Statistical model governing MIDI velocities |
     | **Velocity mean** | Average MIDI velocity |
     | **Velocity SD** | Variability of MIDI velocity |
-    | **Velocity min/max** | Reserved bounds for future velocity clamping |
     """)
 
     st.stop()

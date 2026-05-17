@@ -85,12 +85,7 @@ def _render_any_tone_controls() -> dict:
             with c3:
                 scale_family = st.selectbox("Scale family", SCALE_FAMILIES, index=0)
 
-            if scale_family in ["diatonic", "pentatonic", "arpeggio"]:
-                variant = st.selectbox("Variant", ["major", "minor"], index=0)
-                scale_id = f"{_normalise_tonic_for_id(tonic)}_{scale_family}_{variant}"
-            else:
-                scale_id = f"{_normalise_tonic_for_id(tonic)}_{scale_family}"
-                st.text_input("Variant", value="standard", disabled=True)
+            scale_id = f"{_normalise_tonic_for_id(tonic)}_{scale_family}"
 
             st.caption(f"Selected scale ID: `{scale_id}`")
 

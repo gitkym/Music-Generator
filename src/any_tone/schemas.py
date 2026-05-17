@@ -6,7 +6,6 @@ class ScaleDefinition:
     scale_id: str
     display_name: str
     family: str
-    variant: str
     tonic: str
     pitch_classes: tuple[int, ...]
     note_names: tuple[str, ...]

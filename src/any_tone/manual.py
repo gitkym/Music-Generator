@@ -21,7 +21,6 @@ def build_manual_scale(
         scale_id="manual_scale",
         display_name=display_name,
         family="manual",
-        variant="manual",
         tonic="manual",
         pitch_classes=pcs,
         note_names=pcs_to_note_names(pcs),
