@@ -1,0 +1,20 @@
+name: stochastic_music
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.11
+  - numpy
+  - scipy
+  - pandas
+  - matplotlib
+  - jupyter
+  - ipykernel
+  - pip
+
+  - pip:
+      - mido
+      - pretty_midi
+      - pyyaml
+      - networkx

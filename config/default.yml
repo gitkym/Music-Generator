@@ -1,0 +1,12 @@
+project_name: stochastic_music
+
+rendering:
+  ticks_per_beat: 480
+  bpm: 120
+
+paths:
+  generated_midi: generated/midi
+  generated_audio: generated/audio
+
+external:
+  daw: reaper
